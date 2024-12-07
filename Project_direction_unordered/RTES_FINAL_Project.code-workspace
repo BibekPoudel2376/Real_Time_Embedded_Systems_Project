@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"name": "RTES_FINAL_Project",
+			"path": "../RTES_FINAL_Project"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"MLTable": "yaml",
+			"vector": "cpp"
+		}
+	}
+}

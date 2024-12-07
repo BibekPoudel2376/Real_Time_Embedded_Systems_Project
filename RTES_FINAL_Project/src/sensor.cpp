@@ -6,17 +6,15 @@
 #define CTRL_REG1 0x20
 #define CTRL_REG4 0x23
 #define OUT_X_L 0x28
-#define CTRL_REG2 0x21  // High-pass filter control register
-
+#define STATUS_REG 0x27                // Address of the Status Register for checking data readiness
 // Register configurations with built-in filter enabled
 #define CTRL_REG1_CONFIG 0b01'11'1'1'1'1  // ODR 760Hz, Cut-off 100, Normal mode, X, Y, Z enabled
 #define CTRL_REG4_CONFIG 0b1'0'10'0'00'0  // ±500 dps scale, High-pass filter enabled
-#define CTRL_REG2_CONFIG 0b00000001  // High-pass filter enabled, normal mode, cutoff frequency configuration
 
 #define SPI_FLAG 1
 
 // Sensitivity for ±500 dps scale (from datasheet)
-#define SENSITIVITY 0.017500f  // 17.50 mdps/digit
+#define SENSITIVITY (17.5f * 0.0174532925199432957692236907684886f / 1000.0f)  // 17.50 mdps/digit
 
 EventFlags flags;
 
@@ -38,10 +36,6 @@ void init_spi(SPI &spi, uint8_t *write_buf, uint8_t *read_buf) {
     spi.transfer(write_buf, 2, read_buf, 2, spi_cb);
     flags.wait_all(SPI_FLAG);
 
-    write_buf[0] = CTRL_REG2;
-    write_buf[1] = CTRL_REG2_CONFIG;
-    spi.transfer(write_buf, 2, read_buf, 2, spi_cb);
-    flags.wait_all(SPI_FLAG);
 }
 
 void read_sensor_data(SPI &spi, uint8_t *write_buf, uint8_t *read_buf, float &gx, float &gy, float &gz) {
@@ -50,9 +44,9 @@ void read_sensor_data(SPI &spi, uint8_t *write_buf, uint8_t *read_buf, float &gx
     write_buf[0] = OUT_X_L | 0x80 | 0x40;  // Read operation, auto-increment
     spi.transfer(write_buf, 7, read_buf, 7, spi_cb);
 
-    raw_gx = (int16_t)((read_buf[2] << 8) | read_buf[1]);
-    raw_gy = (int16_t)((read_buf[4] << 8) | read_buf[3]);
-    raw_gz = (int16_t)((read_buf[6] << 8) | read_buf[5]);
+    raw_gx = (uint16_t)((read_buf[2] << 8) | read_buf[1]);
+    raw_gy = (uint16_t)((read_buf[4] << 8) | read_buf[3]);
+    raw_gz = (uint16_t)((read_buf[6] << 8) | read_buf[5]);
 
     gx = (float)raw_gx * SENSITIVITY;
     gy = (float)raw_gy * SENSITIVITY;

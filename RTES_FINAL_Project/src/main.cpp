@@ -94,7 +94,9 @@ void apply_median_filter(float& gx, float& gy, float& gz) {
 //Printing data
 void print_data(float buffer[MAX_SAMPLES][3]) {
     for (int i = 0; i < MAX_SAMPLES; ++i) {
-        printf("gx=%f, gy=%f, gz=%f\n", buffer[i][0], buffer[i][1], buffer[i][2]);
+        printf(">gx:%f\n", buffer[i][0]);
+        printf(">gy:%f\n", buffer[i][1]);
+        printf(">gz:%f\n", buffer[i][2]);
     }
 }
 // Function to record data into the target buffer
