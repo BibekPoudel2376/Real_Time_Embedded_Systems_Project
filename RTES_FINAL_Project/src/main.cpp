@@ -177,6 +177,7 @@ void button_pressed_isr() {
     adjustment_timer.reset();
     adjustment_timer.start();
     adjustment_time_elapsed = false;
+    led_controller.turn_on_red();
     analysis_required=true;
 }
 
