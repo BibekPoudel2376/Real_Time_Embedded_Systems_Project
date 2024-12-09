@@ -48,9 +48,9 @@ void read_sensor_data(SPI &spi, uint8_t *write_buf, uint8_t *read_buf, float &gx
     raw_gy = (uint16_t)((read_buf[4] << 8) | read_buf[3]);
     raw_gz = (uint16_t)((read_buf[6] << 8) | read_buf[5]);
 
-    gx = (float)raw_gx * SENSITIVITY;
-    gy = (float)raw_gy * SENSITIVITY;
-    gz = (float)raw_gz * SENSITIVITY;
+    gx = (float)raw_gx * SENSITIVITY*180/3.14159265358979323846;
+    gy = (float)raw_gy * SENSITIVITY*180/3.14159265358979323846;
+    gz = (float)raw_gz * SENSITIVITY*180/3.14159265358979323846;
 }
 
 void get_gyroscope_values(SPI &spi, float &gx, float &gy, float &gz) {
