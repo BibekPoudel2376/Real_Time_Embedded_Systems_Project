@@ -54,7 +54,7 @@ The project consists of the following:
 ## Setup Instructions
 1. Clone the repository:
         ```bash
-        git clone https://github.com/<your-username>/gesture-recognition-system.git
+        git clone https://github.com/bk-poudel/gesture-recognition-system.git
         cd gesture-recognition-system
         ```
 2. Compile the code using the Mbed framework.
