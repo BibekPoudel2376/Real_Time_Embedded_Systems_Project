@@ -4,14 +4,14 @@
 #include <vector>
 #include <map>
 #include <algorithm>
-//Final Working Code 
+
 //Calibration and Analysis
 const int WINDOW_SIZE = 5;
 std::vector<float> window_x(WINDOW_SIZE), window_y(WINDOW_SIZE), window_z(WINDOW_SIZE);
 int window_index = 0;
 const int CALIBRATION_SAMPLES = 100;
 float gx_offset = 0, gy_offset = 0, gz_offset = 0;
-bool analysis_required=false;
+
 // SPI pins
 SPI spi(PF_9, PF_8, PF_7, PC_1, use_gpio_ssel); // SPI instance
 uint8_t write_buf[32], read_buf[32];
@@ -36,16 +36,6 @@ Timer sample_timer;   // Timer for sampling intervals
 int sample_count = 0; // Sample counter
 volatile bool recording = false; // Flag to indicate recording state
 volatile bool key_recording = true; // Flag to indicate recording state
-float key_gesture_map[20][3]; // Buffer for gesture mapping
-int gesture_map_window_size =30;
-float recorded_gesture_map[20][3]; // Buffer for gesture mapping
-//Function Declarations
-void record_key();
-void record_gesture_data();
-void map_gesture_data(float gesture_data[MAX_SAMPLES][3], float threshold, int window_size, float gesture_map[20][3]);
-void print_data(float buffer[MAX_SAMPLES][3]);
-bool compare_gesture(float gesture_data[20][3], float gesture_map[20][3]);
-
 // Function to find mode
 float find_mode(std::vector<float>& data) {
     std::map<float, int> frequency_map;
@@ -131,8 +121,7 @@ void record_key() {
             led_controller.turn_off_green();
             sample_count = 0;
             sample_timer.stop();
-            map_gesture_data(recorded_gesture_data, 15, 30, key_gesture_map);
-            print_data(key_gesture_map);
+            print_data(recorded_gesture_data);
         }
     }
 }
@@ -159,8 +148,7 @@ void record_gesture_data() {
                 led_controller.turn_off_green();
                 sample_count = 0;
                 sample_timer.stop();
-                map_gesture_data(gesture_data, 15, 30, recorded_gesture_map);
-                print_data(recorded_gesture_map);
+                print_data(gesture_data);
             }
         }
     }
@@ -177,13 +165,10 @@ void button_pressed_isr() {
     adjustment_timer.reset();
     adjustment_timer.start();
     adjustment_time_elapsed = false;
-    led_controller.turn_on_red();
-    analysis_required=true;
 }
 
 // Main function
 int main() {
-    analysis_required=false;
     led_controller.turn_on_red();
     led_controller.turn_off_green();
     key_recording = true;
@@ -214,54 +199,54 @@ int main() {
                 }
             }
         }
-        if (!key_recording && !recording && analysis_required) {
-            if (compare_gesture(key_gesture_map, recorded_gesture_map)) {
-                led_controller.turn_off_red();
-                analysis_required=false;
-            }
-        }
     }
 }
 
 //Create a function to crete a sliding window of size 20, take average of that window and then compare it with the threshold value. If the average value is greater than +threshold value for particular axis map it as 1, if it is less than -threshold value for particular axis map it as -1 and if it is between -threshold and +threshold map it as 0.
-void map_gesture_data(float gesture_data[MAX_SAMPLES][3], float threshold, int window_size, float gesture_map[20][3]) {
-    int window_start = 0;
-    int window_end = window_size;
-    int gesture_map_counter = 0;
-
-    while (window_end <= MAX_SAMPLES) {
-        float gx_sum = 0, gy_sum = 0, gz_sum = 0;
-
-        for (int i = window_start; i < window_end; i++) {
-            gx_sum += gesture_data[i][0];
-            gy_sum += gesture_data[i][1];
-            gz_sum += gesture_data[i][2];
+void map_gesture_data(float gesture_data[MAX_SAMPLES][3], float threshold, int window_size)  {
+    int window_start=0;
+    int window_end=window_size;
+    int gesture_map_counter=0;
+    int gesture_map[MAX_SAMPLES][3];
+    while(window_end<MAX_SAMPLES) {
+        float gx_sum=0, gy_sum=0, gz_sum=0;
+        for(int i=window_start; i<window_end; i++) {
+            gx_sum+=gesture_data[i][0];
+            gy_sum+=gesture_data[i][1];
+            gz_sum+=gesture_data[i][2];
         }
-
-        float gx_avg = gx_sum / window_size;
-        float gy_avg = gy_sum / window_size;
-        float gz_avg = gz_sum / window_size;
-
-        gesture_map[gesture_map_counter][0] = (gx_avg > threshold) ? 1 : (gx_avg < -threshold) ? -1 : 0;
-        gesture_map[gesture_map_counter][1] = (gy_avg > threshold) ? 1 : (gy_avg < -threshold) ? -1 : 0;
-        gesture_map[gesture_map_counter][2] = (gz_avg > threshold) ? 1 : (gz_avg < -threshold) ? -1 : 0;
-
-        window_start += window_size / 2;
-        window_end += window_size / 2;
+        float gx_avg=gx_sum/window_size;
+        float gy_avg=gy_sum/window_size;
+        float gz_avg=gz_sum/window_size;
+        if (gx_avg>threshold){
+            gesture_map[gesture_map_counter][0]=1;
+        }
+        else if (gx_avg<-threshold){
+            gesture_map[gesture_map_counter][0]=-1;
+        }
+        else{
+            gesture_map[gesture_map_counter][0]=0;
+        }
+        if (gy_avg>threshold){
+            gesture_map[gesture_map_counter][1]=1;
+        }
+        else if (gy_avg<-threshold){
+            gesture_map[gesture_map_counter][1]=-1;
+        }
+        else{
+            gesture_map[gesture_map_counter][1]=0;
+        }
+        if (gz_avg>threshold){
+            gesture_map[gesture_map_counter][2]=1;
+        }
+        else if (gz_avg<-threshold){
+            gesture_map[gesture_map_counter][2]=-1;
+        }
+        else{
+            gesture_map[gesture_map_counter][2]=0;
+        }
+        window_start+=window_size/2;
         gesture_map_counter++;
     }
-}
-//The gesture mapped data are -1,1,0 so use a simple algorithm to account for delay and check if the two mapped data are same or not. If they are same then the gesture is same. If they are not same then the gesture is different.
-bool compare_gesture(float gesture_map1[20][3], float gesture_map2[20][3]) {
-    int false_counter=0;
-    for (int i = 0; i < 20; i++) {
-        if (gesture_map1[i][0] != gesture_map2[i][0] || gesture_map1[i][1] != gesture_map2[i][1] || gesture_map1[i][2] != gesture_map2[i][2]) {
-            false_counter++;
-        }
-    }
-    if (false_counter>2) {
-        return false;
-    } else {
-        return true;
-    }
+        
 }
