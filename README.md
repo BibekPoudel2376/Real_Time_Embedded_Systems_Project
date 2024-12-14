@@ -74,4 +74,4 @@ The project consists of the following:
 - Akshay Parihalkar
 
 ## License
-This project is licensed under the MIT License.esture Recognition System
+This project is licensed under the MIT License. Gesture Recognition System
