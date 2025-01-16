@@ -53,8 +53,8 @@ The project consists of the following:
 ## Setup Instructions
 1. Clone the repository:
         ```bash
-        git clone https://github.com/bk-poudel/gesture-recognition-system.git
-        cd gesture-recognition-system
+        git clone https://github.com/bk-poudel/gesture-recognition-system.git](https://github.com/bk-poudel/Real_Time_Embedded_Systems_Project.git
+        cd RTES_FINAL_Project
         ```
 2. Compile the code using the Mbed framework.
 3. Flash the compiled binary to the target hardware.
