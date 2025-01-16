@@ -47,9 +47,8 @@ The project consists of the following:
 
 ## Prerequisites
 - Mbed Framework
-- Gyroscope Sensor (e.g., MPU6050)
+- STM32F49I Discovery Board
 - C++ Compiler (compatible with Mbed OS)
-- LED indicators and push buttons.
 
 ## Setup Instructions
 1. Clone the repository:
@@ -59,14 +58,11 @@ The project consists of the following:
         ```
 2. Compile the code using the Mbed framework.
 3. Flash the compiled binary to the target hardware.
-4. Connect the gyroscope, LEDs, and push button as per the circuit diagram.
-5. Power up the system and follow the instructions in the terminal or LEDs.
 
 ## Usage
-1. Press the button to start recording a gesture.
-2. Move the device in the desired pattern.
-3. Release the button to end recording.
-4. The system compares the gesture with a reference and provides LED feedback.
+1. The system records the gesture while booting up. So, you can record new gesture by pressing the reset button
+2. To perform the gesture press blue button (in stm32f49i board), and strat performing the gesture
+3. If the gesture matches the red led will turn off, otherwise the red LED will be on.
 
 ## Contributors
 - Bibek Poudel
